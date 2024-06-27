@@ -1,4 +1,22 @@
-class Sensor {}
+class Sensor {
+    constructor(id, name, type, value, unit,updated_at){
+        this.id=id;
+        this.name=name;
+        this.type=type;
+        this.value=value;
+        this.unit=unit;
+        this.updated_at=updated_at;
+    }
+
+    set updateValue(newValue){
+        this.value=newValue;
+        this.updated_at = new Date().toISOString();
+    }
+
+    static isValidType(type){
+        return ['temperature','humidity','pressure'].includes(type);
+    }
+}
 
 class SensorManager {
     constructor() {
@@ -33,7 +51,28 @@ class SensorManager {
         }
     }
 
-    async loadSensors(url) {}
+    async loadSensors(url) {
+        try {
+            const response = await fetch(url);
+            const sensorsData = await response.json();
+            sensorsData.forEach(sensorData =>{
+                if(Sensor.isValidType(sensorData.type)){
+                    const sensor = new Sensor(
+                        sensorData.id,
+                        sensorData.name,
+                        sensorData.type,
+                        sensorData.value,
+                        sensorDate.unit,
+                        sensorData.updated_at
+                    );
+                    this.addSensor(sensor);
+                }
+            })
+            this.render();
+        } catch (error) {
+            console.error('Error loading sensors:',error)
+        }
+    }
 
     render() {
         const container = document.getElementById("sensor-container");
@@ -54,8 +93,8 @@ class SensorManager {
                                 <strong>Tipo:</strong> ${sensor.type}
                             </p>
                             <p>
-                               <strong>Valor:</strong> 
-                               ${sensor.value} ${sensor.unit}
+                                <strong>Valor:</strong> 
+                                ${sensor.value} ${sensor.unit}
                             </p>
                         </div>
                         <time datetime="${sensor.updated_at}">
