@@ -62,7 +62,7 @@ class SensorManager {
                         sensorData.name,
                         sensorData.type,
                         sensorData.value,
-                        sensorDate.unit,
+                        sensorData.unit,
                         sensorData.updated_at
                     );
                     this.addSensor(sensor);
