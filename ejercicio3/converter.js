@@ -6,11 +6,60 @@ class Currency {
 }
 
 class CurrencyConverter {
-    constructor() {}
+    constructor(apiUrl) {
+        this.apiUrl = apiUrl;
+        this.currencies = [];
+    }
 
-    getCurrencies(apiUrl) {}
+    async getCurrencies() {
+        try {
+            const response = await fetch(`${this.apiUrl}/currencies`);
+            const data = await response.json();
+            this.currencies = Object.keys(data).map(code => new Currency(code, data[code]));
+        } catch (error) {
+            console.error('Error fetching currencies:', error);
+        }
+    }
 
-    convertCurrency(amount, fromCurrency, toCurrency) {}
+    async convertCurrency(amount, fromCurrency, toCurrency) {
+        if (fromCurrency.code === toCurrency.code) {
+            return amount;
+        }
+
+        try {
+            const response = await fetch(`${this.apiUrl}/latest?amount=${amount}&from=${fromCurrency.code}&to=${toCurrency.code}`);
+            const data = await response.json();
+            return data.rates[toCurrency.code];
+        } catch (error) {
+            console.error('Error converting currency:', error);
+            return null;
+        }
+    }
+
+    async getExchangeRateOnDate(date, fromCurrency, toCurrency) {
+        try {
+            const response = await fetch(`${this.apiUrl}/${date}?from=${fromCurrency.code}&to=${toCurrency.code}`);
+            const data = await response.json();
+            return data.rates[toCurrency.code];
+        } catch (error) {
+            console.error('Error fetching exchange rate:', error);
+            return null;
+        }
+    }
+
+    async getExchangeRateDifference(fromCurrency, toCurrency) {
+        const today = new Date().toISOString().split('T')[0];
+        const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+
+        const todayRate = await this.getExchangeRateOnDate(today, fromCurrency, toCurrency);
+        const yesterdayRate = await this.getExchangeRateOnDate(yesterday, fromCurrency, toCurrency);
+
+        if (todayRate !== null && yesterdayRate !== null) {
+            return todayRate - yesterdayRate;
+        } else {
+            return null;
+        }
+    }
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -51,7 +100,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     });
 
-    function populateCurrencies(selectElement, currencies) {
+    async function populateCurrencies(selectElement, currencies) {
         if (currencies) {
             currencies.forEach((currency) => {
                 const option = document.createElement("option");
