@@ -12,10 +12,11 @@
     height: 100%;
     transform-style: preserve-3d;
     transition: transform 0.6s;
+    transform: rotateY(180deg);
 }
 
 .card.flipped .card-inner {
-    transform: rotateY(180deg);
+    transform: rotateY(0deg);
 }
 
 .card-front,
@@ -30,7 +31,7 @@
 }
 
 .card-front {
-    background: #f0f0f0;
+    background: #362b2b;
     border-radius: 10px;
 }
 
